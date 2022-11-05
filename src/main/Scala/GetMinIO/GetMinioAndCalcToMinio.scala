@@ -1,8 +1,6 @@
 package GetMinIO
 import java.io.InputStream
 import java.util.Properties
-
-import GetMinIO.StockPartitioner
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._

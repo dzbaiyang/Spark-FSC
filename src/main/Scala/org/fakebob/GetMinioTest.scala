@@ -1,13 +1,16 @@
 package org.fakebob
 
 import org.apache.spark
+
 import java.io.InputStream
-import java.util.Properties
+import java.util.{Date, Properties}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.IntegerType
+
+import java.text.SimpleDateFormat
 import scala.collection.mutable.ListBuffer
 
 
@@ -21,6 +24,7 @@ object GetMinioTest {
             import org.apache.spark.sql.types._
             import spark.implicits._
 
+            println("运行开始时间：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date))
       //  一 ，两表关联
             //  1 ，表计算
             val dfJoin: DataFrame = spark.sql("select case when a.birth between 1980 and 1989 then '80后'" +
@@ -40,6 +44,8 @@ object GetMinioTest {
             //  3 ，表注册 ： joinTable
             joinTable.createOrReplaceTempView("joinTable")
             spark.sql("select * from joinTable").show()
+            println("运行结束时间：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date))
+
       }
 
       def getSpark(): SparkSession = {

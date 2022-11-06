@@ -23,7 +23,18 @@ object GetMinioTest {
 
       //  一 ，两表关联
             //  1 ，表计算
-            val dfJoin: DataFrame = spark.sql("select * from tests")
+            val dfJoin: DataFrame = spark.sql("select case when a.birth between 1980 and 1989 then '80后'" +
+              " when a.birth between 1990 and 1999 then '90后'" +
+              " when a.birth between 2000 and 2009 then '00后'" +
+              " when a.birth between 2010 and 2019 then '10后'" +
+              " else '20后' end split," +
+              " count(id) as cnt" +
+              " from student a" +
+              " group by case when a.birth between 1980 and 1989 then '80后'" +
+              " when a.birth between 1990 and 1999 then '90后'" +
+              " when a.birth between 2000 and 2009 then '00后'" +
+              " when a.birth between 2010 and 2019 then '10后'" +
+              " else '20后' end")
             //  2 ，表缓存
             val joinTable: DataFrame = dfJoin.cache()
             //  3 ，表注册 ： joinTable
@@ -57,9 +68,9 @@ object GetMinioTest {
             sc.hadoopConfiguration.set("fs.s3a.endpoint", properties.getProperty("fs.s3a.endpoint"))
 
             //  5 ，注意 ： 读文件，有表头
-            val dftest: DataFrame = spark.read.option("header", "true").option("delimiter", ",").csv("s3a://fakebob/test/test.csv")
-            val dftests: DataFrame = dftest.toDF("id", "name", "dt")
-            dftests.cache().createOrReplaceTempView("tests")
+            val dftest: DataFrame = spark.read.option("header", "true").option("delimiter", ",").csv("s3a://fakebob/student/student.csv")
+            val dftests: DataFrame = dftest.toDF("id", "name", "sex", "birth", "department", "address")
+            dftests.cache().createOrReplaceTempView("student")
             spark
       }
 }

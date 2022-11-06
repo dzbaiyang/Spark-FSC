@@ -21,9 +21,10 @@ object GetMinioFSC {
             import org.apache.spark.sql.types._
             import spark.implicits._
 
-      //  一 ，两表关联
+            //  一 ，两表关联
             //  1 ，表计算
-            val dfJoin: DataFrame = spark.sql("select * from tests")
+            val dfJoin: DataFrame = spark.sql("select sale_date,store_code,sum(tender_detail_amount) as tender_detail_amount from cpos_tender_info" +
+              " group by sale_date,store_code")
             //  2 ，表缓存
             val joinTable: DataFrame = dfJoin.cache()
             //  3 ，表注册 ： joinTable
@@ -48,7 +49,7 @@ object GetMinioFSC {
             spark.sparkContext.setLogLevel("WARN")
             //  2 ，读资源文件
             val properties = new Properties()
-            val stream: InputStream = GetMinioTest.getClass.getClassLoader.getResourceAsStream("GetMinio.properties")
+            val stream: InputStream = GetMinioFSC.getClass.getClassLoader.getResourceAsStream("GetMinio.properties")
             properties.load(stream)
             //  3 ，设置数据源 ( s3 )
             val sc: SparkContext = spark.sparkContext
@@ -57,9 +58,33 @@ object GetMinioFSC {
             sc.hadoopConfiguration.set("fs.s3a.endpoint", properties.getProperty("fs.s3a.endpoint"))
 
             //  5 ，注意 ： 读文件，有表头
-            val dftest: DataFrame = spark.read.option("header", "true").option("delimiter", ",").csv("s3a://fakebob/test/test.csv")
-            val dftests: DataFrame = dftest.toDF("id", "name", "dt")
-            dftests.cache().createOrReplaceTempView("tests")
+            val dftest: DataFrame = spark.read.option("header", "true").option("delimiter", ",").csv("s3a://fakebob/test/cpos_tender_info.csv")
+            val dftests: DataFrame = dftest.toDF( "id",
+                                                            "create_time",
+                                                            "modified_time",
+                                                            "order_unique_id",
+                                                            "uuid",
+                                                            "store_code",
+                                                            "business_date",
+                                                            "sale_date",
+                                                            "sale_time",
+                                                            "order_type",
+                                                            "order_no",
+                                                            "tender_openid",
+                                                            "tender_no",
+                                                            "tender_company",
+                                                            "tender_quantity",
+                                                            "tender_detail_amount",
+                                                            "tender_description",
+                                                            "tender_dept_name",
+                                                            "tender_dept_id",
+                                                            "activity_id",
+                                                            "activity_abbreviation",
+                                                            "summary_status",
+                                                            "business_type",
+                                                            "order_number",
+                                                            "order_id")
+            dftests.cache().createOrReplaceTempView("cpos_tender_info")
             spark
       }
 }
